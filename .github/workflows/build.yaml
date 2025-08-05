@@ -1,0 +1,30 @@
+name: PDF Maker build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.7
+
+      - name: Install wkhtmltopdf
+        run: |
+          sudo apt-get update
+          sudo apt install -y xfonts-base xfonts-750dpi
+          wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb
+          sudo dpkg -i wkhtmltox_0.12.6-1.bionic_amd64.deb
+
+      - name: Set up Go
+        uses: actions/setup-go@v5.0.1
+        with:
+          go-version: stable
+
+      - name: Build
+        run: go build -v .
