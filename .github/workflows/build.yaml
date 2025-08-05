@@ -14,10 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.7
 
-      - name: Install wkhtmltopdf
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y xfonts-base xfonts-75dpi openssl
+          sudo apt install -y xfonts-base xfonts-75dpi
+          wget https://launchpad.net/ubuntu/+source/openssl/1.1.1f-1ubuntu2/+build/19186412/+files/openssl_1.1.1f-1ubuntu2_amd64.deb
+          sudo dpkg -i openssl_1.1.1f-1ubuntu2_amd64.deb
+
+      - name: Install wkhtmltopdf
+        run: |
           wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb
           sudo dpkg -i wkhtmltox_0.12.6-1.bionic_amd64.deb
 
