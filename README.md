@@ -16,3 +16,4 @@
   - [ ] Implementar EDA para html em string
   - [ ] Implementar log de erros e eventos
   - [ ] Implementar header com logo e título
+  - [ ] Adicionar testes unitário a CI/CD
