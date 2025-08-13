@@ -2,11 +2,10 @@
 
 - Funcionalidades para ser implementadas:
   - [ ] Criar PDF a partir de HTML (arquivo ou string)
-  - [ ] Criar PDF a partir de Markdown
-  - [ ] Criar PDF a partir de texto simples
+  - [x] Criar PDF a partir de texto simples
   - [ ] Reader e Footer customizáveis
   - [ ] Criação de template para PDF
-  - [ ] Implementar Options Pattern para facilitar chamadas
+  - [x] Implementar Options Pattern para facilitar chamadas
   - [ ] Implementar testes unitários
   - [ ] Implementar output para storage (S3, Azure Blob, etc)
   - [ ] Implementar output para email
