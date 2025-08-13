@@ -1,14 +1,16 @@
 package main
 
 import (
-	pdf_generator "github.com/tiagoncardoso/go-pdf/pkg/pdf-generator"
-	"log"
-	"os"
-	"path/filepath"
+	"log/slog"
+
+	"github.com/tiagoncardoso/go-pdf/pkg/pdf-generator"
 )
 
 func main() {
-	pdfConfig := pdf_generator.PdfParams{
+	pdfConfig := pdfgen.PdfParams{
+		Dpi:         300,
+		OutputPath:  "internal/output",
+		Title:       "PDF Gerado",
 		Orientation: "Portrait",
 		PageSize:    "A4",
 	}
@@ -30,19 +32,21 @@ func main() {
 </body>
 </html>`
 
-	pdfBytes, err := pdf_generator.NewPDFGenerator(html).Generate(pdfConfig)
+	pdfGenerator := pdfgen.New(
+		pdfgen.WithHTMLContent(html),
+		pdfgen.WithOutputFilePath(pdfConfig.OutputPath, "meupdf.pdf"),
+		pdfgen.WithDPISet(pdfConfig.Dpi),
+		pdfgen.WithPageSizeSet(pdfConfig.PageSize),
+		pdfgen.WithOrientationSet(pdfConfig.Orientation),
+		pdfgen.WithTitle(pdfConfig.Title),
+	)
+
+	pdfByte, err := pdfGenerator.GeneratePDF()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("error generating pdf file", "error", err.Error())
 	}
 
-	outputDir := "internal/output"
-	outputPath := filepath.Join(outputDir, "output.pdf")
-
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		panic(err)
-	}
-
-	if err := os.WriteFile(outputPath, pdfBytes, 0755); err != nil {
-		panic(err)
+	if err := pdfGenerator.CreateFile(pdfByte); err != nil {
+		slog.Error("error creating pdf file", "error", err.Error())
 	}
 }
