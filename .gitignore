@@ -27,3 +27,7 @@ go.work.sum
 
 # pdf files
 internal/output/*.pdf
+
+#toml files
+tmp
+.air.toml

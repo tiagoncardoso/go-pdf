@@ -15,7 +15,7 @@ type PDFGenerator struct {
 }
 
 type PdfParams struct {
-	HtmlContent    string
+	htmlContent    string
 	OutputPath     string
 	fullOutputPath string
 	Dpi            uint
@@ -42,7 +42,7 @@ func (p *PDFGenerator) GeneratePDF() ([]byte, error) {
 		return nil, err
 	}
 
-	pdfContent := wkhtmltopdf.NewPageReader(bytes.NewReader([]byte(p.params.HtmlContent)))
+	pdfContent := wkhtmltopdf.NewPageReader(bytes.NewReader([]byte(p.params.htmlContent)))
 	pdfGen.AddPage(pdfContent)
 
 	err = pdfGen.Create()
@@ -72,7 +72,7 @@ func (p *PDFGenerator) CreateFile(fileBytes []byte) error {
 
 func WithHTMLContent(htmlContent string) Option {
 	return func(p *PDFGenerator) {
-		p.params.HtmlContent = htmlContent
+		p.params.htmlContent = htmlContent
 	}
 }
 

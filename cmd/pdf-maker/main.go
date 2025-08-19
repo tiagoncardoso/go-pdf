@@ -1,8 +1,7 @@
 package main
 
 import (
-	"log/slog"
-
+	"github.com/tiagoncardoso/go-pdf/pkg/logger"
 	"github.com/tiagoncardoso/go-pdf/pkg/pdf-generator"
 )
 
@@ -43,10 +42,10 @@ func main() {
 
 	pdfByte, err := pdfGenerator.GeneratePDF()
 	if err != nil {
-		slog.Error("error generating pdf file", "error", err.Error())
+		logger.Error("error generating pdf file", "error", err.Error())
 	}
 
 	if err := pdfGenerator.CreateFile(pdfByte); err != nil {
-		slog.Error("error creating pdf file", "error", err.Error())
+		logger.Error("error creating pdf file", "error", err.Error())
 	}
 }
