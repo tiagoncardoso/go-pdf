@@ -20,6 +20,7 @@ func main() {
 	webServer := http.NewWebServer(envConf.AppPort)
 
 	webServer.AddHandler("/pdf/generate", "POST", pdfGenHandler.GeneratePdf)
+	webServer.AddHandler("/pdf/getLink", "GET", pdfGenHandler.GenerateTempLink)
 
 	webServer.Start()
 }

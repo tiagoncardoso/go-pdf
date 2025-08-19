@@ -16,6 +16,7 @@ type PdfHandler struct {
 	ctx                  context.Context
 	pdfGeneratorUsecase  *usecase.GeneratePdfFromHtml
 	sendToStorageUsecase *usecase.SendFileToStorage
+	generatePdfTempLink  *usecase.GenerateTempFileLink
 }
 
 func NewPdfHandler(ctx context.Context, envConfig *config.EnvConfig) *PdfHandler {
@@ -23,6 +24,7 @@ func NewPdfHandler(ctx context.Context, envConfig *config.EnvConfig) *PdfHandler
 		ctx:                  ctx,
 		pdfGeneratorUsecase:  usecase.NewGeneratePdfFromHtml(envConfig),
 		sendToStorageUsecase: usecase.NewSendFileToStorage(envConfig),
+		generatePdfTempLink:  usecase.NewGenerateTempFileLink(envConfig),
 	}
 }
 
@@ -38,22 +40,46 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	err = p.pdfGeneratorUsecase.Execute(string(body))
+	pdfName, err := p.pdfGeneratorUsecase.Execute(string(body))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to generate PDF: %v", err), http.StatusInternalServerError)
 		return
 	}
-	// TODO: Chamar Caso de Uso com Parametros do PDF + Body para gerar o PDF
-	// TODO: Utilizar o PDF gerado na resposta da requisição
 
-	err = p.sendToStorageUsecase.Execute("caminho/do/arquivo.pdf")
+	objectKey, err := p.sendToStorageUsecase.Execute(pdfName)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to send file to storage: %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	// TODO: Melhorar resposta da API
+	// TODO: Adicionar referência para que o arquivo possa ser baixado (via link temporário)
+	// TODO: Gerar Hash do nome do arquivo para buscar no storage
 	err = json.NewEncoder(w).Encode(types.HttpOkResponse{
-		Message: "PDF generation not implemented yet",
+		Message: "File " + objectKey + " generated and sent to storage successfully",
+		Data:    nil,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (p *PdfHandler) GenerateTempLink(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	//TODO: Gerar hash do nome do arquivo e buscar no storage
+	// Obter a hash do nome do arquivo via query param
+	link, err := p.generatePdfTempLink.Execute("analytics/sca-report_1755566931.pdf")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to generate temporary link: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(types.HttpOkResponse{
+		Message: "Temporary link: " + link,
 		Data:    nil,
 	})
 	if err != nil {

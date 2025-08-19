@@ -1,9 +1,10 @@
 package usecase
 
 import (
-	"fmt"
+	"path/filepath"
 
 	"github.com/tiagoncardoso/go-pdf/config"
+	"github.com/tiagoncardoso/go-pdf/pkg/logger"
 
 	"os"
 
@@ -31,10 +32,10 @@ func NewSendFileToStorage(env *config.EnvConfig) *SendFileToStorage {
 	}
 }
 
-func (s *SendFileToStorage) Execute(filePath string) error {
-	filePath = "./internal/output/rep_1755560063.pdf"
+func (s *SendFileToStorage) Execute(fileName string) (string, error) {
+	path := "./internal/output"
 
-	file, err := os.Open(filePath)
+	file, err := os.Open(filepath.Join(path, fileName))
 	if err != nil {
 		panic(err)
 	}
@@ -47,12 +48,12 @@ func (s *SendFileToStorage) Execute(filePath string) error {
 		S3ForcePathStyle: aws.Bool(true),
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	storageService := s3.New(storageSession)
 
-	objectKey := "analytics/" + file.Name()
+	objectKey := "analytics/" + fileName
 
 	_, err = storageService.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(s.spaceName),
@@ -61,10 +62,10 @@ func (s *SendFileToStorage) Execute(filePath string) error {
 		ACL:    aws.String("public-read"), // or "private"
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	fmt.Println("File uploaded successfully!")
+	logger.Info("File uploaded successfully!")
 
-	return nil
+	return objectKey, nil
 }

@@ -17,10 +17,12 @@ func NewGeneratePdfFromHtml(env *config.EnvConfig) *GeneratePdfFromHtml {
 	}
 }
 
-func (p *GeneratePdfFromHtml) Execute(htmlContent string) error {
+func (p *GeneratePdfFromHtml) Execute(htmlContent string) (string, error) {
+	pdfName := helpers.GenerateFileName(p.env.ReportPrefix)
+
 	pdfGenerator := pdfgen.New(
 		pdfgen.WithHTMLContent(htmlContent),
-		pdfgen.WithOutputFilePath(p.env.OutputPath, helpers.GenerateFileName("rep")),
+		pdfgen.WithOutputFilePath(p.env.OutputPath, pdfName),
 		pdfgen.WithDPISet(p.env.Dpi),
 		pdfgen.WithPageSizeSet(p.env.PageSize),
 		pdfgen.WithOrientationSet(p.env.Orientation),
@@ -36,5 +38,5 @@ func (p *GeneratePdfFromHtml) Execute(htmlContent string) error {
 		logger.Error("error creating pdf file", "error", err.Error())
 	}
 
-	return nil
+	return pdfName, nil
 }

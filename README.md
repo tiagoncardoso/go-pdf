@@ -7,7 +7,7 @@
   - [ ] Criação de template para PDF
   - [x] Implementar Options Pattern para facilitar chamadas
   - [ ] Implementar testes unitários
-  - [ ] Implementar output para storage (S3, Azure Blob, etc)
+  - [x] Implementar output para storage (S3, Azure Blob, etc)
   - [ ] Implementar output para email
   - [ ] Implementar output para impressão direta
   - [ ] Implementar output para visualização no navegador
@@ -16,3 +16,4 @@
   - [ ] Implementar log de erros e eventos
   - [ ] Implementar header com logo e título
   - [ ] Adicionar testes unitário a CI/CD
+  - [ ] Adicionar autenticação na API
