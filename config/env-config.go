@@ -16,6 +16,9 @@ type EnvConfig struct {
 	StorageRegion            string `mapstructure:"STORAGE_REGION"`
 	ReportPrefix             string `mapstructure:"REPORT_PREFIX"`
 	PdfLinkExpirationSeconds int    `mapstructure:"PDF_LINK_EXPIRATION_SECONDS"`
+	BasicAuthRealm           string `mapstructure:"BASIC_AUTH_REALM"`
+	BasicAuthClientID        string `mapstructure:"BASIC_AUTH_CLIENT_ID"`
+	BasicAuthClientSecret    string `mapstructure:"BASIC_AUTH_CLIENT_SECRET"`
 }
 
 func SetupEnvConfig() (*EnvConfig, error) {

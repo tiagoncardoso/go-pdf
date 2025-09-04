@@ -17,7 +17,7 @@ func main() {
 
 	pdfGenHandler := handler.NewPdfHandler(ctx, envConf)
 
-	webServer := http.NewWebServer(envConf.AppPort)
+	webServer := http.NewWebServer(envConf.AppPort, envConf.BasicAuthRealm, envConf.BasicAuthClientID, envConf.BasicAuthClientSecret)
 
 	webServer.AddHandler("/pdf/generate", "POST", pdfGenHandler.GeneratePdf)
 	webServer.AddHandler("/pdf/getLink", "GET", pdfGenHandler.GenerateTempLink)

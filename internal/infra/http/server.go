@@ -15,16 +15,23 @@ type Handler struct {
 }
 
 type WebServer struct {
-	Router        chi.Router
-	Handlers      map[string]Handler
-	WebServerPort string
+	Router          chi.Router
+	Handlers        map[string]Handler
+	WebServerPort   string
+	AuthRealm       string
+	AuthCredentials map[string]string
+	AuthSecret      string
 }
 
-func NewWebServer(webServerPort string) *WebServer {
+func NewWebServer(webServerPort, authRealm, authClientId, authClientSecret string) *WebServer {
 	return &WebServer{
 		Router:        chi.NewRouter(),
 		Handlers:      make(map[string]Handler),
 		WebServerPort: webServerPort,
+		AuthRealm:     authRealm,
+		AuthCredentials: map[string]string{
+			authClientId: authClientSecret,
+		},
 	}
 }
 
@@ -38,6 +45,8 @@ func (ws *WebServer) AddHandler(path string, method string, handler http.Handler
 
 func (ws *WebServer) Start() {
 	ws.Router.Use(middleware.Logger)
+	fmt.Println(ws.AuthRealm, ws.AuthCredentials)
+	ws.Router.Use(middleware.BasicAuth(ws.AuthRealm, ws.AuthCredentials))
 
 	for _, handler := range ws.Handlers {
 		switch handler.Method {
