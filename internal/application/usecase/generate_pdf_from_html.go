@@ -1,8 +1,8 @@
 package usecase
 
 import (
+	"github.com/google/uuid"
 	"github.com/tiagoncardoso/go-pdf/config"
-	"github.com/tiagoncardoso/go-pdf/internal/application/helpers"
 	"github.com/tiagoncardoso/go-pdf/pkg/logger"
 	pdfgen "github.com/tiagoncardoso/go-pdf/pkg/pdf-generator"
 )
@@ -18,7 +18,7 @@ func NewGeneratePdfFromHtml(env *config.EnvConfig) *GeneratePdfFromHtml {
 }
 
 func (p *GeneratePdfFromHtml) Execute(htmlContent string) (string, error) {
-	pdfName := helpers.GenerateFileName(p.env.ReportPrefix)
+	pdfName := uuid.New().String() + ".pdf"
 
 	pdfGenerator := pdfgen.New(
 		pdfgen.WithHTMLContent(htmlContent),
