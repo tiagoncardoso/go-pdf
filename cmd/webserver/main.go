@@ -19,8 +19,8 @@ func main() {
 
 	webServer := http.NewWebServer(envConf.AppPort, envConf.BasicAuthRealm, envConf.BasicAuthClientID, envConf.BasicAuthClientSecret)
 
-	webServer.AddHandler("/pdf/generate", "POST", pdfGenHandler.GeneratePdf)
-	webServer.AddHandler("/pdf/getLink", "GET", pdfGenHandler.GenerateTempLink)
+	webServer.AddHandler("/pdf/generate/{reportPath}", "POST", pdfGenHandler.GeneratePdf)
+	webServer.AddHandler("/pdf/getLink/{reportPath}/{fileId}", "GET", pdfGenHandler.GenerateTempLink)
 
 	webServer.Start()
 }
