@@ -1,0 +1,2 @@
+npx commitlint --edit $1
+npm run prepare-commit-msg
