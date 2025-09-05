@@ -45,7 +45,6 @@ func (ws *WebServer) AddHandler(path string, method string, handler http.Handler
 
 func (ws *WebServer) Start() {
 	ws.Router.Use(middleware.Logger)
-	fmt.Println(ws.AuthRealm, ws.AuthCredentials)
 	ws.Router.Use(middleware.BasicAuth(ws.AuthRealm, ws.AuthCredentials))
 
 	for _, handler := range ws.Handlers {
