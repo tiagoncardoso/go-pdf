@@ -32,7 +32,7 @@ func NewSendFileToStorage(env *config.EnvConfig) *SendFileToStorage {
 	}
 }
 
-func (s *SendFileToStorage) Execute(fileName string) (string, error) {
+func (s *SendFileToStorage) Execute(reportPath, fileName string) (string, error) {
 	path := "./internal/output"
 
 	file, err := os.Open(filepath.Join(path, fileName))
@@ -53,7 +53,7 @@ func (s *SendFileToStorage) Execute(fileName string) (string, error) {
 
 	storageService := s3.New(storageSession)
 
-	objectKey := "analytics/" + fileName
+	objectKey := filepath.Join(reportPath, fileName)
 
 	_, err = storageService.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(s.spaceName),

@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path/filepath"
+	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/tiagoncardoso/go-pdf/config"
 	"github.com/tiagoncardoso/go-pdf/internal/application/usecase"
 	"github.com/tiagoncardoso/go-pdf/internal/infra/http/types"
@@ -17,6 +20,7 @@ type PdfHandler struct {
 	pdfGeneratorUsecase  *usecase.GeneratePdfFromHtml
 	sendToStorageUsecase *usecase.SendFileToStorage
 	generatePdfTempLink  *usecase.GenerateTempFileLink
+	deleteTempFile       *usecase.DeleteTempFile
 }
 
 func NewPdfHandler(ctx context.Context, envConfig *config.EnvConfig) *PdfHandler {
@@ -25,13 +29,15 @@ func NewPdfHandler(ctx context.Context, envConfig *config.EnvConfig) *PdfHandler
 		pdfGeneratorUsecase:  usecase.NewGeneratePdfFromHtml(envConfig),
 		sendToStorageUsecase: usecase.NewSendFileToStorage(envConfig),
 		generatePdfTempLink:  usecase.NewGenerateTempFileLink(envConfig),
+		deleteTempFile:       usecase.NewDeleteTempFile(),
 	}
 }
 
 func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
+	reportPath := chi.URLParam(r, "reportPath")
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -42,22 +48,27 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 
 	pdfName, err := p.pdfGeneratorUsecase.Execute(string(body))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to generate PDF: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to generate PDF: %v", err), http.StatusBadGateway)
 		return
 	}
 
-	objectKey, err := p.sendToStorageUsecase.Execute(pdfName)
+	_, err = p.sendToStorageUsecase.Execute(reportPath, pdfName)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to send file to storage: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to send file to storage: %v", err), http.StatusBadGateway)
 		return
 	}
 
-	// TODO: Melhorar resposta da API
-	// TODO: Adicionar referência para que o arquivo possa ser baixado (via link temporário)
-	// TODO: Gerar Hash do nome do arquivo para buscar no storage
+	err = p.deleteTempFile.Execute(filepath.Join(pdfName))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete temporary file: %v", err), http.StatusPartialContent)
+		return
+	}
+
 	err = json.NewEncoder(w).Encode(types.HttpOkResponse{
-		Message: "File " + objectKey + " generated and sent to storage successfully",
-		Data:    nil,
+		Message: "PDF file generated and sent to storage successfully",
+		Data: map[string]string{
+			"fileID": strings.Replace(pdfName, ".pdf", "", 1),
+		},
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -70,9 +81,10 @@ func (p *PdfHandler) GenerateTempLink(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	//TODO: Gerar hash do nome do arquivo e buscar no storage
-	// Obter a hash do nome do arquivo via query param
-	link, err := p.generatePdfTempLink.Execute("analytics/sca-report_1755566931.pdf")
+	reportPath := chi.URLParam(r, "reportPath")
+	fileId := filepath.Join(reportPath, chi.URLParam(r, "fileId")+".pdf")
+
+	link, err := p.generatePdfTempLink.Execute(fileId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to generate temporary link: %v", err), http.StatusInternalServerError)
 		return
