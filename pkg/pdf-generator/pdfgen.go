@@ -84,7 +84,7 @@ func WithOutputFilePath(filePath, filename string) Option {
 			p.params.fullOutputPath = filepath.Join(filePath, filename)
 		} else {
 			p.params.OutputPath = filePath
-			p.params.fullOutputPath = filepath.Join("../internal/output/output", strconv.FormatInt(now, 10)+".pdf")
+			p.params.fullOutputPath = filepath.Join("../internal/output/", strconv.FormatInt(now, 10)+".pdf")
 		}
 	}
 }
