@@ -1,0 +1,28 @@
+{
+  "name": "go-pdf",
+  "version": "1.0.0",
+  "description": "- Funcionalidades para ser implementadas:   - [ ] Criar PDF a partir de HTML (arquivo ou string)   - [x] Criar PDF a partir de texto simples   - [ ] Reader e Footer customizáveis   - [ ] Criação de template para PDF   - [x] Implementar Options Pattern para facilitar chamadas   - [ ] Implementar testes unitários   - [x] Implementar output para storage (S3, Azure Blob, etc)   - [ ] Implementar output para email   - [ ] Implementar output para impressão direta   - [ ] Implementar output para visualização no navegador   - [ ] Implementar output para download   - [ ] Implementar EDA para html em string   - [ ] Implementar log de erros e eventos   - [ ] Implementar header com logo e título   - [ ] Adicionar testes unitário a CI/CD   - [ ] Adicionar autenticação na API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tiagoncardoso/go-pdf.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tiagoncardoso/go-pdf/issues"
+  },
+  "homepage": "https://github.com/tiagoncardoso/go-pdf#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "devmoji": "^2.3.0",
+    "husky": "^9.1.7"
+  }
+}

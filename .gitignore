@@ -31,3 +31,5 @@ internal/output/*.pdf
 #toml files
 tmp
 .air.toml
+
+node_modules
