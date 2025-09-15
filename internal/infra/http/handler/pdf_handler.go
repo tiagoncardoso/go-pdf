@@ -13,6 +13,7 @@ import (
 	"github.com/tiagoncardoso/go-pdf/config"
 	"github.com/tiagoncardoso/go-pdf/internal/application/usecase"
 	"github.com/tiagoncardoso/go-pdf/internal/infra/http/types"
+	"github.com/tiagoncardoso/go-pdf/pkg/logger"
 )
 
 type PdfHandler struct {
@@ -60,8 +61,8 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 
 	err = p.deleteTempFile.Execute(filepath.Join(pdfName))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to delete temporary file: %v", err), http.StatusPartialContent)
-		return
+		// Log the error internally, but do not expose to user
+		logger.Warn("Failed to delete temporary file.", "err", err)
 	}
 
 	err = json.NewEncoder(w).Encode(types.HttpOkResponse{
