@@ -33,3 +33,6 @@ tmp
 .air.toml
 
 node_modules
+
+#Goland
+.idea
