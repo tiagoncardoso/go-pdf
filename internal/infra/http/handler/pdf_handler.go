@@ -30,7 +30,7 @@ func NewPdfHandler(ctx context.Context, envConfig *config.EnvConfig) *PdfHandler
 		pdfGeneratorUsecase:  usecase.NewGeneratePdfFromHtml(envConfig),
 		sendToStorageUsecase: usecase.NewSendFileToStorage(envConfig),
 		generatePdfTempLink:  usecase.NewGenerateTempFileLink(envConfig),
-		deleteTempFile:       usecase.NewDeleteTempFile(),
+		deleteTempFile:       usecase.NewDeleteTempFile(envConfig),
 	}
 }
 
@@ -59,9 +59,8 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = p.deleteTempFile.Execute(filepath.Join(pdfName))
+	err = p.deleteTempFile.Execute(pdfName)
 	if err != nil {
-		// Log the error internally, but do not expose to user
 		logger.Warn("Failed to delete temporary file.", "err", err)
 	}
 
