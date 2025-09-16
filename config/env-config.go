@@ -1,6 +1,12 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"os"
+	"strconv"
+
+	"github.com/joho/godotenv"
+	"github.com/tiagoncardoso/go-pdf/pkg/logger"
+)
 
 type EnvConfig struct {
 	AppPort                  string `mapstructure:"APP_PORT"`
@@ -22,20 +28,54 @@ type EnvConfig struct {
 }
 
 func SetupEnvConfig() (*EnvConfig, error) {
-	viper.SetConfigName("env")
-	viper.SetConfigType("env")
-	viper.AddConfigPath(".")
-	viper.SetConfigFile(".env")
-	viper.AutomaticEnv()
+	// Load .env file if present, ignore error if not
+	_ = godotenv.Load()
 
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
+	cfg := &EnvConfig{
+		AppPort:                  os.Getenv("APP_PORT"),
+		Dpi:                      parseUintEnv("DPI"),
+		OutputPath:               os.Getenv("OUTPUT_PATH"),
+		Title:                    os.Getenv("TITLE"),
+		Orientation:              os.Getenv("ORIENTATION"),
+		PageSize:                 os.Getenv("PAGE_SIZE"),
+		StorageEndpoint:          os.Getenv("STORAGE_ENDPOINT"),
+		StorageSpaceName:         os.Getenv("STORAGE_SPACE_NAME"),
+		StorageAccessKey:         os.Getenv("STORAGE_ACCESS_KEY"),
+		StorageSecretKey:         os.Getenv("STORAGE_SECRET_KEY"),
+		StorageRegion:            os.Getenv("STORAGE_REGION"),
+		ReportPrefix:             os.Getenv("REPORT_PREFIX"),
+		PdfLinkExpirationSeconds: parseIntEnv("PDF_LINK_EXPIRATION_SECONDS"),
+		BasicAuthRealm:           os.Getenv("BASIC_AUTH_REALM"),
+		BasicAuthClientID:        os.Getenv("BASIC_AUTH_CLIENT_ID"),
+		BasicAuthClientSecret:    os.Getenv("BASIC_AUTH_CLIENT_SECRET"),
 	}
 
-	var envConf EnvConfig
-	if err := viper.Unmarshal(&envConf); err != nil {
-		return nil, err
-	}
+	return cfg, nil
+}
 
-	return &envConf, nil
+func parseUintEnv(key string) uint {
+	val := os.Getenv(key)
+	if val == "" {
+		return 0
+	}
+	var u uint64
+	u, err := strconv.ParseUint(val, 10, 32)
+	if err != nil {
+		logger.Warn("Invalid uint value for %s: %v", key, err)
+		return 0
+	}
+	return uint(u)
+}
+
+func parseIntEnv(key string) int {
+	val := os.Getenv(key)
+	if val == "" {
+		return 0
+	}
+	i, err := strconv.Atoi(val)
+	if err != nil {
+		logger.Warn("Invalid int value for %s: %v", key, err)
+		return 0
+	}
+	return i
 }
