@@ -29,7 +29,7 @@ jobs:
           go-version: stable
 
       - name: Build Cmd
-        run: go build -v ./cmd/pdf_maker/main.go -o pdf_maker_cmd
+        run: go build -v -o pdf_maker_cmd ./cmd/pdf_maker/main.go
 
       - name: Build Web Service
-        run: go build -v ./cmd/webserver/main.go -o pdf_maker_webserver
+        run: go build -v -o pdf_maker_webserver ./cmd/webserver/main.go
