@@ -91,8 +91,10 @@ func (p *PdfHandler) GenerateTempLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = json.NewEncoder(w).Encode(types.HttpOkResponse{
-		Message: "Temporary link: " + link,
-		Data:    nil,
+		Message: "Temporary link generated successfully ",
+		Data: map[string]string{
+			"link": link,
+		},
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
