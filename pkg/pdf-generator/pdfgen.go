@@ -45,15 +45,15 @@ func (p *PDFGenerator) GeneratePDF() ([]byte, error) {
 	pdfContent := wkhtmltopdf.NewPageReader(bytes.NewReader([]byte(p.params.htmlContent)))
 	pdfGen.AddPage(pdfContent)
 
-	err = pdfGen.Create()
-	if err != nil {
-		return nil, err
-	}
-
 	pdfGen.Dpi.Set(p.params.Dpi)
 	pdfGen.PageSize.Set(p.params.PageSize)
 	pdfGen.Orientation.Set(p.params.Orientation)
 	pdfGen.Title.Set(p.params.Title)
+
+	err = pdfGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
 	return pdfGen.Bytes(), nil
 }
