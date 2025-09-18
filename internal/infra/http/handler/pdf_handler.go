@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -40,14 +39,19 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	reportPath := chi.URLParam(r, "reportPath")
 
-	body, err := io.ReadAll(r.Body)
+	err := r.ParseForm()
 	if err != nil {
-		http.Error(w, "Failed to read body", http.StatusBadRequest)
+		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
 
-	pdfName, err := p.pdfGeneratorUsecase.Execute(string(body))
+	htmlBody := r.FormValue("body")
+	if htmlBody == "" {
+		http.Error(w, "Missing 'body' form value", http.StatusBadRequest)
+		return
+	}
+
+	pdfName, err := p.pdfGeneratorUsecase.Execute(htmlBody)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to generate PDF: %v", err), http.StatusBadGateway)
 		return
