@@ -38,6 +38,7 @@ func main() {
 		pdfgen.WithPageSizeSet(pdfConfig.PageSize),
 		pdfgen.WithOrientationSet(pdfConfig.Orientation),
 		pdfgen.WithTitle(pdfConfig.Title),
+		pdfgen.WithPaginationSet(true),
 	)
 
 	pdfByte, err := pdfGenerator.GeneratePDF()

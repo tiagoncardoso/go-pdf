@@ -22,6 +22,7 @@ type PdfParams struct {
 	PageSize       string
 	Title          string
 	Orientation    string
+	Pagination     bool
 }
 
 type Option func(*PDFGenerator)
@@ -43,6 +44,14 @@ func (p *PDFGenerator) GeneratePDF() ([]byte, error) {
 	}
 
 	pdfContent := wkhtmltopdf.NewPageReader(bytes.NewReader([]byte(p.params.htmlContent)))
+
+	if p.params.Pagination {
+		pdfContent.FooterLine.Set(true)
+		pdfContent.FooterRight.Set("Página [page] de [toPage]")
+		pdfContent.FooterFontSize.Set(10)
+		pdfContent.FooterSpacing.Set(5)
+	}
+
 	pdfGen.AddPage(pdfContent)
 
 	pdfGen.Dpi.Set(p.params.Dpi)
@@ -106,6 +115,12 @@ func WithPageSizeSet(pageSize string) Option {
 		} else {
 			p.params.PageSize = wkhtmltopdf.PageSizeA4
 		}
+	}
+}
+
+func WithPaginationSet(pagination bool) Option {
+	return func(p *PDFGenerator) {
+		p.params.Pagination = pagination
 	}
 }
 

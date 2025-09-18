@@ -27,6 +27,7 @@ func (p *GeneratePdfFromHtml) Execute(htmlContent string) (string, error) {
 		pdfgen.WithPageSizeSet(p.env.PageSize),
 		pdfgen.WithOrientationSet(p.env.Orientation),
 		pdfgen.WithTitle(p.env.Title),
+		pdfgen.WithPaginationSet(true),
 	)
 
 	pdfByte, err := pdfGenerator.GeneratePDF()
