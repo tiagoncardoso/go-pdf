@@ -16,6 +16,7 @@ type PDFGenerator struct {
 
 type PdfParams struct {
 	htmlContent    string
+	htmlHeader     string
 	OutputPath     string
 	fullOutputPath string
 	Dpi            uint
@@ -48,13 +49,32 @@ func (p *PDFGenerator) GeneratePDF() ([]byte, error) {
 	if p.params.Pagination {
 		pdfContent.FooterLine.Set(true)
 		pdfContent.FooterRight.Set("Página [page] de [toPage]")
-		pdfContent.FooterFontSize.Set(10)
+		pdfContent.FooterFontSize.Set(9)
 		pdfContent.FooterSpacing.Set(5)
+	}
+
+	var headerFile *os.File
+	headerFile, err = os.CreateTemp("", "header-*.html")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(headerFile.Name())
+
+	if p.params.htmlHeader != "" {
+
+		if _, err := headerFile.Write([]byte(p.params.htmlHeader)); err != nil {
+			return nil, err
+		}
+		headerFile.Close()
+		pdfContent.HeaderHTML.Set(headerFile.Name())
+		pdfContent.HeaderSpacing.Set(5)
 	}
 
 	pdfGen.AddPage(pdfContent)
 
 	pdfGen.Dpi.Set(p.params.Dpi)
+	pdfGen.MarginTop.Set(25)    // Set top margin to 20mm for header space
+	pdfGen.MarginBottom.Set(15) // Set bottom margin as needed
 	pdfGen.PageSize.Set(p.params.PageSize)
 	pdfGen.Orientation.Set(p.params.Orientation)
 	pdfGen.Title.Set(p.params.Title)
@@ -82,6 +102,12 @@ func (p *PDFGenerator) CreateFile(fileBytes []byte) error {
 func WithHTMLContent(htmlContent string) Option {
 	return func(p *PDFGenerator) {
 		p.params.htmlContent = htmlContent
+	}
+}
+
+func WithHeaderHTMLContent(htmlHeader string) Option {
+	return func(p *PDFGenerator) {
+		p.params.htmlHeader = htmlHeader
 	}
 }
 

@@ -17,7 +17,7 @@ func NewGeneratePdfFromHtml(env *config.EnvConfig) *GeneratePdfFromHtml {
 	}
 }
 
-func (p *GeneratePdfFromHtml) Execute(htmlContent string) (string, error) {
+func (p *GeneratePdfFromHtml) Execute(htmlContent, headerContent string) (string, error) {
 	pdfName := uuid.New().String() + ".pdf"
 
 	pdfGenerator := pdfgen.New(
@@ -27,6 +27,7 @@ func (p *GeneratePdfFromHtml) Execute(htmlContent string) (string, error) {
 		pdfgen.WithPageSizeSet(p.env.PageSize),
 		pdfgen.WithOrientationSet(p.env.Orientation),
 		pdfgen.WithTitle(p.env.Title),
+		pdfgen.WithHeaderHTMLContent(headerContent),
 		pdfgen.WithPaginationSet(true),
 	)
 

@@ -51,7 +51,13 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pdfName, err := p.pdfGeneratorUsecase.Execute(htmlBody)
+	htmlHeader := r.FormValue("header")
+	if htmlHeader == "" {
+		logger.Warn("Missing 'header' form value. Setting header to empty string.")
+		htmlHeader = ""
+	}
+
+	pdfName, err := p.pdfGeneratorUsecase.Execute(htmlBody, htmlHeader)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to generate PDF: %v", err), http.StatusBadGateway)
 		return
