@@ -54,7 +54,7 @@ func (p *PDFGenerator) GeneratePDF() ([]byte, error) {
 	}
 
 	var headerFile *os.File
-	headerFile, err = os.CreateTemp("", "header-*.html")
+	headerFile, err = os.CreateTemp("./", "header-*.html")
 	if err != nil {
 		return nil, err
 	}
