@@ -9,6 +9,7 @@ permissions:
   issues: write
   pull-requests: write
   packages: write
+  id-token: write
 
 jobs:
   build-artifact:
@@ -96,7 +97,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/tiagoncardoso/repo-sca-ultra-registry/go-pdf:${{ steps.get_tag.outputs.tag }}
-            ghcr.io/tiagoncardoso/repo-sca-ultra-registry/go-pdf:latest
+            ghcr.io/tiagoncardoso/go-pdf:${{ steps.get_tag.outputs.tag }}
+            ghcr.io/tiagoncardoso/go-pdf:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
