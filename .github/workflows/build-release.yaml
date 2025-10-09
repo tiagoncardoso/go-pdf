@@ -1,0 +1,57 @@
+name: PDF Maker build Release
+
+on:
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  build-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.7
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y xfonts-base xfonts-75dpi
+
+      - name: Install wkhtmltopdf
+        run: |
+          sudo apt install wkhtmltopdf
+
+      - name: Set up Go
+        uses: actions/setup-go@v5.0.1
+        with:
+          go-version: stable
+
+      - name: Build Cmd
+        run: go build -v -o pdf_maker_cmd ./cmd/pdf_maker/main.go
+
+      - name: Build Web Service
+        run: go build -v -o pdf_maker_webserver ./cmd/webserver/main.go
+
+  release:
+    needs: build-artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.1
+        with:
+          go-version: stable
+
+      - name: Semantic Release
+        uses: go-semantic-release/action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          changelog-generator-opt: "emojis=true"

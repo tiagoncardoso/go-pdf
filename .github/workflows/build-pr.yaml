@@ -1,9 +1,6 @@
-name: PDF Maker build
+name: PDF Maker build Pull Request
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
