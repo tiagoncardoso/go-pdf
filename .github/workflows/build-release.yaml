@@ -74,8 +74,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: tiagoncardoso
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Get latest release tag
         id: get_tag
