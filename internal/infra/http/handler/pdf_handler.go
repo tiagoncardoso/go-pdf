@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -39,15 +40,26 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	reportPath := chi.URLParam(r, "reportPath")
 
-	err := r.ParseForm()
-	if err != nil {
+	if err := r.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
 		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
 		return
 	}
 
-	htmlBody := r.FormValue("body")
+	var htmlBody string
+	if file, _, err := r.FormFile("file"); err == nil {
+		defer file.Close()
+		b, err := io.ReadAll(file)
+		if err != nil {
+			http.Error(w, "Failed to read uploaded file", http.StatusBadRequest)
+			return
+		}
+		htmlBody = string(b)
+	} else {
+		htmlBody = r.FormValue("body")
+	}
+
 	if htmlBody == "" {
-		http.Error(w, "Missing 'body' form value", http.StatusBadRequest)
+		http.Error(w, "Missing HTML content: provide either 'file' upload or 'body' form value", http.StatusBadRequest)
 		return
 	}
 
@@ -74,13 +86,12 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 		logger.Warn("Failed to delete temporary file.", "err", err)
 	}
 
-	err = json.NewEncoder(w).Encode(types.HttpOkResponse{
+	if err := json.NewEncoder(w).Encode(types.HttpOkResponse{
 		Message: "PDF file generated and sent to storage successfully",
 		Data: map[string]string{
 			"fileID": strings.Replace(pdfName, ".pdf", "", 1),
 		},
-	})
-	if err != nil {
+	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
