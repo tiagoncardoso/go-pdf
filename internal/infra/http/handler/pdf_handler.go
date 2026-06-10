@@ -17,20 +17,22 @@ import (
 )
 
 type PdfHandler struct {
-	ctx                  context.Context
-	pdfGeneratorUsecase  *usecase.GeneratePdfFromHtml
-	sendToStorageUsecase *usecase.SendFileToStorage
-	generatePdfTempLink  *usecase.GenerateTempFileLink
-	deleteTempFile       *usecase.DeleteTempFile
+	ctx                   context.Context
+	pdfGeneratorUsecase   *usecase.GeneratePdfFromHtml
+	sendToStorageUsecase  *usecase.SendFileToStorage
+	generatePdfTempLink   *usecase.GenerateTempFileLink
+	deleteTempFile        *usecase.DeleteTempFile
+	deleteFileFromStorage *usecase.DeleteFileFromStorage
 }
 
 func NewPdfHandler(ctx context.Context, envConfig *config.EnvConfig) *PdfHandler {
 	return &PdfHandler{
-		ctx:                  ctx,
-		pdfGeneratorUsecase:  usecase.NewGeneratePdfFromHtml(envConfig),
-		sendToStorageUsecase: usecase.NewSendFileToStorage(envConfig),
-		generatePdfTempLink:  usecase.NewGenerateTempFileLink(envConfig),
-		deleteTempFile:       usecase.NewDeleteTempFile(envConfig),
+		ctx:                   ctx,
+		pdfGeneratorUsecase:   usecase.NewGeneratePdfFromHtml(envConfig),
+		sendToStorageUsecase:  usecase.NewSendFileToStorage(envConfig),
+		generatePdfTempLink:   usecase.NewGenerateTempFileLink(envConfig),
+		deleteTempFile:        usecase.NewDeleteTempFile(envConfig),
+		deleteFileFromStorage: usecase.NewDeleteFileFromStorage(envConfig),
 	}
 }
 
@@ -71,12 +73,14 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 
 	pdfName, err := p.pdfGeneratorUsecase.Execute(htmlBody, htmlHeader)
 	if err != nil {
+		logger.Error("Failed to generate PDF.", "err", err)
 		http.Error(w, fmt.Sprintf("Failed to generate PDF: %v", err), http.StatusBadGateway)
 		return
 	}
 
 	_, err = p.sendToStorageUsecase.Execute(reportPath, pdfName)
 	if err != nil {
+		logger.Error("Failed to send file to storage.", "err", err)
 		http.Error(w, fmt.Sprintf("Failed to send file to storage: %v", err), http.StatusBadGateway)
 		return
 	}
@@ -92,6 +96,7 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 			"fileID": strings.Replace(pdfName, ".pdf", "", 1),
 		},
 	}); err != nil {
+		logger.Error("Failed to encode response.", "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -116,6 +121,29 @@ func (p *PdfHandler) GenerateTempLink(w http.ResponseWriter, r *http.Request) {
 		Data: map[string]string{
 			"link": link,
 		},
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (p *PdfHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+
+	reportPath := chi.URLParam(r, "reportPath")
+	fileId := filepath.Join(reportPath, chi.URLParam(r, "fileId")+".pdf")
+
+	err := p.deleteFileFromStorage.Execute(fileId)
+	if err != nil {
+		logger.Error("Failed to delete file from storage.", "err", err)
+		http.Error(w, fmt.Sprintf("Failed to delete file from storage: %v", err), http.StatusInternalServerError)
+	}
+
+	err = json.NewEncoder(w).Encode(types.HttpOkResponse{
+		Message: "File deleted successfully",
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

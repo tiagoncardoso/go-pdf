@@ -21,6 +21,7 @@ func main() {
 
 	webServer.AddHandler("/pdf/generate/{reportPath}", "POST", pdfGenHandler.GeneratePdf)
 	webServer.AddHandler("/pdf/getLink/{reportPath}/{fileId}", "GET", pdfGenHandler.GenerateTempLink)
+	webServer.AddHandler("/pdf/delete/{reportPath}/{fileId}", "DELETE", pdfGenHandler.DeleteFile)
 
 	webServer.Start()
 }
