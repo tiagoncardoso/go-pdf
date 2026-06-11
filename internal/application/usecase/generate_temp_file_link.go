@@ -1,9 +1,11 @@
 package usecase
 
 import (
+	"errors"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -33,6 +35,11 @@ func (g *GenerateTempFileLink) Execute(objectKey string) (string, error) {
 
 	storageService := s3.New(storageSession)
 
+	err = checkFileExists(storageService, g.env.StorageSpaceName, objectKey)
+	if err != nil {
+		return "", err
+	}
+
 	req, _ := storageService.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: aws.String(g.env.StorageSpaceName),
 		Key:    aws.String(objectKey),
@@ -44,4 +51,18 @@ func (g *GenerateTempFileLink) Execute(objectKey string) (string, error) {
 	}
 
 	return urlStr, nil
+}
+
+func checkFileExists(storageService *s3.S3, storageSpaceName string, objectKey string) error {
+	_, err := storageService.HeadObject(&s3.HeadObjectInput{
+		Bucket: aws.String(storageSpaceName),
+		Key:    aws.String(objectKey),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
+			return errors.New("file not found in storage")
+		}
+	}
+
+	return nil
 }

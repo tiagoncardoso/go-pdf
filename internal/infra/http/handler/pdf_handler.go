@@ -71,6 +71,7 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 		htmlHeader = ""
 	}
 
+	logger.Info("Starting PDF generation...")
 	pdfName, err := p.pdfGeneratorUsecase.Execute(htmlBody, htmlHeader)
 	if err != nil {
 		logger.Error("Failed to generate PDF.", "err", err)
@@ -78,6 +79,7 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.Info("Starting storage upload...")
 	_, err = p.sendToStorageUsecase.Execute(reportPath, pdfName)
 	if err != nil {
 		logger.Error("Failed to send file to storage.", "err", err)
@@ -105,14 +107,14 @@ func (p *PdfHandler) GeneratePdf(w http.ResponseWriter, r *http.Request) {
 func (p *PdfHandler) GenerateTempLink(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 
 	reportPath := chi.URLParam(r, "reportPath")
 	fileId := filepath.Join(reportPath, chi.URLParam(r, "fileId")+".pdf")
 
 	link, err := p.generatePdfTempLink.Execute(fileId)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to generate temporary link: %v", err), http.StatusInternalServerError)
+		logger.Error("Failed to generate temporary link.", "err", err)
+		http.Error(w, fmt.Sprintf("Failed to generate temporary link: %v", err), http.StatusNotFound)
 		return
 	}
 
